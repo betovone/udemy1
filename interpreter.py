@@ -76,9 +76,11 @@ assert interpreter.input("x") ==  1
 assert interpreter.input("x + 3") ==  4
 
 # pruebas mas grosas
+# estas pruebas no funcionan aun
 assert interpreter.input("4 / 2 * 3") ==  6
+assert interpreter.input('(10 / (8 - (4 + 2))) * 3') == 15
+assert interpreter.input('3 * ( 4 + 2 )') == 18
 assert interpreter.input("4 + 2 * 3") ==  10
 assert interpreter.input('( 4 + 2 ) * 3') == 18
 assert interpreter.input('3 * ( 4 + 2 )') == 18
 assert interpreter.input('(10 / (8 - (4 + 2))) * 3') == 15
-
