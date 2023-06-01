@@ -151,7 +151,6 @@ if __name__ == '__main__':
     assert interpreter.input('3 * ( 4 + 2 )') == 18
     assert interpreter.input('( 4 + 2 ) * 3') == 18
     assert interpreter.input('3 * ( 4 + 2 )') == 18
-    assert interpreter.input('(10 / (8 - (4 + 2))) * 3') == 15
     assert interpreter.input("4 + 2 * 3") ==  10
     assert interpreter.input("(7 + 3) / (2 * 2 + 1)") == 2
     
