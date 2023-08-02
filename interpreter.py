@@ -57,23 +57,72 @@ class Interpreter:
             return self._resultado_prioridad(expression)
 
 
-    def _resultado_prioridad(self, expression):
+    def _resultado_prioridad_mas(self, expression):
         priority_expression = ''
         lista_suma = []
         if '+' in expression:
             for exp1 in expression.split('+'):
-                if '-' in exp1:
-                    lista_resta = []
-                    for e2 in exp1.split('-'):
-                        lista_resta.append(self._resultado_parentesis(e2))
-                    priority_expression = '-'.join(lista_resta)
-                lista_suma.append(self._resultado_parentesis(exp1))
+                exp1 = exp1.replace(' ','')
+                if not exp1.isdigit():
+                    lista_suma.append(self._resultado_parentesis(exp1))
+                else:
+                    lista_suma.append(exp1)
             expression = priority_expression + '+'.join(lista_suma)
         return expression
 
+    def _resultado_prioridad_menos(self, expression):
+        priority_expression = ''
+        lista_resta = []
+        if '-' in expression:
+            for exp1 in expression.split('-'):
+                exp1 = exp1.replace(' ','')
+                if not exp1.isdigit():
+                    lista_resta.append(self._resultado_parentesis(exp1))
+                else:
+                    lista_resta.append(exp1)
+            expression = priority_expression + '-'.join(lista_resta)
+        return expression
+
+
+    def _resultado_prioridad(self, expression):
+        asignar=''
+        if '=' in expression:
+            asignar, expression = expression.split('=')[0], expression.split('=')[1]
+            asignar = f'{asignar}='
+        
+        expression = self._resultado_prioridad_mas(expression)
+        expression = self._resultado_prioridad_menos(expression)
+        expression = expression.replace(' ','')
+        regex = re.compile("[-+*\/\%]+")
+        tokens = [s for s in regex.findall(expression) if not s.isspace()]
+        if len(tokens) == 1:
+            expression = expression.split(tokens[0])
+            valor_a = self.vars[expression[0]] if not expression[0].isdigit() else expression[0]
+            valor_b = self.vars[expression[1]] if not expression[1].isdigit() else expression[1]
+            return asignar + str(self.operators[tokens[0]](int(valor_a), int(valor_b)))
+        
+        return asignar + expression
+    
+    
+    
+
     def input(self, expression):
+        expression = expression.replace(' ','')
+        regex = re.compile("[-+*\/\%]+")
+        tokens = [s for s in regex.findall(expression) if not s.isspace()]
+        if not tokens and expression.isdigit():
+            raise Exception('deberia ir un operador')
+        
+        
         while '(' in expression:
-            expression = interpreter._expresion_sin_parentesis(expression)
+            inicio = expression.find('(')+1
+            fin = expression.find(')')
+            subexp = expression[inicio:fin]
+            if not '(' in subexp:
+                nueva_exp = self._resultado_prioridad(subexp)
+                expression = expression[:inicio-1] + nueva_exp + expression[fin+1:]
+            else:
+                expression = self._expresion_sin_parentesis(expression)
         
         expression = self._resultado_prioridad(expression)
         
@@ -92,7 +141,12 @@ class Interpreter:
                     raise Exception('deberia ir un operador')
             elif tokens[0].isalpha() and len(tokens) >= 3:
                 if tokens[1] == '=':
-                    self.vars[tokens[0]] = int(tokens[2])
+                    if tokens[2].isdigit():
+                        self.vars[tokens[0]] = int(tokens[2])
+                    elif tokens[2] in self.vars.keys():
+                        self.vars[tokens[0]] = self.vars[tokens[2]]
+                    else:
+                        raise Exception('no existe variable')
                     resultado += self.vars[tokens[0]]
                 else:
                     if tokens[0] in self.vars.keys():
@@ -114,6 +168,9 @@ class Interpreter:
                         raise Exception('no existe variable')
                 tokens = tokens[2:]
             
+            elif len(tokens) == 1 and tokens[0].isdigit():
+                resultado = int(tokens[0])
+                tokens.pop()
             else:
                 raise Exception('no existe variable')
         
@@ -125,13 +182,16 @@ class Interpreter:
 if __name__ == '__main__':
         
     interpreter = Interpreter()
-        
+    
+    """
     ecuacion2 = "(7 + 3) / (2 * 2 + 1)"
     print(ecuacion2)
     while '(' in ecuacion2:
         ecuacion2 = interpreter._expresion_sin_parentesis(ecuacion2)
     
     print(ecuacion2)
+    """
+    assert interpreter.input("(7 + 3) / (2 * 2 + 1)") == 2
 
     assert interpreter.input("1 + 1") == 2
     assert interpreter.input("2 - 1") == 1
@@ -153,4 +213,14 @@ if __name__ == '__main__':
     assert interpreter.input('3 * ( 4 + 2 )') == 18
     assert interpreter.input("4 + 2 * 3") ==  10
     assert interpreter.input("(7 + 3) / (2 * 2 + 1)") == 2
+    
+    
+    assert interpreter.input("(8 - (4 + 2)) * 3") == 6
+    
+    assert interpreter.input("y=x") == 1
+    
+    assert interpreter.input("y = x + 5") == 6
+    
+    assert interpreter.input("y") ==  6
+    
     
