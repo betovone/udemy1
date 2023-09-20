@@ -19,8 +19,6 @@ def calculate(rectangles):
     print(area)
     return area
 
-
-
 assert calculate([]) == 0
 assert calculate([(0,0,1,1)]) == 1
 assert calculate([(0, 4, 11, 6)]) == 22
