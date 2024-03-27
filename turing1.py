@@ -1,4 +1,4 @@
-from typing import List
+# from typing import List
 
 def solution(a, b):
     cant = a.count(b*2) * 2 
